@@ -212,7 +212,7 @@ class ServerLogic:
         found_client: list[tuple[tuple[str, int], Any]] = [
             (addr, data)
             for addr, data in self.clients.items()
-            if any(file["fname"] == fname for file in data["files"])
+            if any(file == fname for file in data["files"])
             and addr != requesting_client
         ]
 

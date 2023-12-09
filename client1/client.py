@@ -192,26 +192,26 @@ class FileClient:
         Returns:
             bool: True if the file was published successfully, False otherwise
         """
+        if file_path != self.repository_folder:
+            if self.server_connected is False:
+                self.log("Not connected to server.")
+                return False
 
-        if self.server_connected is False:
-            self.log("Not connected to server.")
-            return False
+            if not os.path.exists(file_path):
+                self.log(f"File does not exist.")
+                return False
 
-        if not os.path.exists(file_path):
-            self.log(f"File does not exist.")
-            return False
+            if self.is_file_in_folder(file_name, self.repository_folder):
+                self.log(f"File name '{file_name}' already exists.")
+                return False
+            
+            uploaded_file_path = os.path.join(self.repository_folder, file_name)
 
-        if self.is_file_in_folder(file_name, self.repository_folder):
-            self.log(f"File name '{file_name}' already exists.")
-            return False
-        
-        uploaded_file_path = os.path.join(self.repository_folder, file_name)
-
-        try:
-            shutil.copy(file_path, uploaded_file_path)
-            self.log(f'File uploaded to repository: {uploaded_file_path}')
-        except Exception as e:
-            self.log(f'Error uploading file: {e}')
+            try:
+                shutil.copy(file_path, uploaded_file_path)
+                self.log(f'File uploaded to repository: {uploaded_file_path}')
+            except Exception as e:
+                self.log(f'Error uploading file: {e}')
         
         request = json.dumps(
             {
@@ -258,10 +258,10 @@ class FileClient:
             bool: True if the file was sent successfully, False otherwise
         """
         found_file_path = None
-
+        local_files = os.listdir(self.repository_folder)
         for file_info in local_files:
-            if file_info["file_name"] == fname:
-                found_file_path = file_info["file_path"]
+            if file_info == fname:
+                found_file_path = os.path.join(self.repository_folder, fname)
                 break
 
         if found_file_path is None or not os.path.exists(found_file_path) or not os.path.isfile(found_file_path):
@@ -438,15 +438,15 @@ class FileClient:
 
         data = json.loads(recved_data)
         fname = file_name
-        if os.path.isfile(os.path.join(self.path, fname)):
+        if os.path.isfile(os.path.join(self.repository_folder, fname)):
             fname = fname.split(".")[0] + "_copy." + fname.split(".")[1]
         length = data["payload"]["length"]
         if data["payload"]["success"] is False:
             self.log(data["payload"]["message"])
             return False
 
-        self.log("Downloading file...")
-        with open(os.path.join(self.path, fname), "wb") as file:
+        self.log(f"Downloading file from {target_socket.getpeername()}...")
+        with open(os.path.join(self.repository_folder, fname), "wb") as file:
             try:
                 offset = 0
                 while offset < length:
@@ -461,6 +461,8 @@ class FileClient:
                     self.log(f"Received {offset} bytes of data...")
 
                 self.log("Download completed!")
+                self.log(f"Publish file {fname} to server")
+                self.publish(self.client_socket,self.repository_folder, fname)
 
             except ConnectionResetError:
                 self.log("Connection closed by peer.")

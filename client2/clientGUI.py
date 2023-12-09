@@ -114,6 +114,9 @@ class FileClientGUI:
             return
         try:
             self.client.fetch(self.client.client_socket, file_name)
+            self.window["-REPO-"].update(disabled=False)
+            self.window["-REPO-"].print(f"{file_name}\n")
+            self.window["-REPO-"].update(disabled=True)
         except Exception as e:
             self.log(f"Error fetching file: {e}")
 
