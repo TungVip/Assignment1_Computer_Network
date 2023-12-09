@@ -235,10 +235,18 @@ class FileClient:
         Args:
             client_socket (socket.socket): the client' socket
             file_name (str): the file's name on the server to fetch
+        Return:
+            Bool
         """
         if self.server_connected is False:
             self.log("Not connected to server.")
-            return
+            return False
+
+        files = os.listdir(self.repository_folder)
+        for file in files:
+            if file == file_name:
+                self.log("File existing in repository")
+                return False
 
         command = {"header": "fetch", "type": 0, "payload": {"fname": file_name}}
         request = json.dumps(command)
@@ -246,6 +254,8 @@ class FileClient:
             client_socket.sendall(request.encode("utf-8", "replace"))
         except Exception as e:
             self.log(f"Error fetch file: {e}")
+            return False
+        return True
 
     def send_file(self, client_socket: socket.socket, fname: str):
         """Send a file to a peer.
@@ -462,7 +472,7 @@ class FileClient:
 
                 self.log("Download completed!")
                 self.log(f"Publish file {fname} to server")
-                self.publish(self.client_socket,self.repository_folder, fname)
+                self.publish(self.client_socket, self.repository_folder, file_name)
 
             except ConnectionResetError:
                 self.log("Connection closed by peer.")

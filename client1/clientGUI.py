@@ -113,11 +113,12 @@ class FileClientGUI:
             self.log("Error fetching file: File name cannot be blank!")
             return
         try:
-            self.client.fetch(self.client.client_socket, file_name)
-            self.window["-COMMAND-"].update("")
-            self.window["-REPO-"].update(disabled=False)
-            self.window["-REPO-"].print(file_name.rstrip("\n"))
-            self.window["-REPO-"].update(disabled=True)
+            fetch_status = self.client.fetch(self.client.client_socket, file_name)
+            if fetch_status:
+                self.window["-COMMAND-"].update("")
+                self.window["-REPO-"].update(disabled=False)
+                self.window["-REPO-"].print(file_name.rstrip("\n"))
+                self.window["-REPO-"].update(disabled=True)
         except Exception as e:
             self.log(f"Error fetching file: {e}")
 
