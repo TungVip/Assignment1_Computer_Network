@@ -52,7 +52,7 @@ class ServerGUI:
         self.window["-REQUEST_LOG-"].update(disabled=True)
 
 if __name__ == '__main__':
-    gui = ServerGUI("localhost", 8888)
+    gui = ServerGUI("0.0.0.0", 8888)
 
     while True:
         event, values = gui.window.read()

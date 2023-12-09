@@ -8,7 +8,7 @@ import threading
 
 class FileClient:
     def __init__(self, log_callback=None):
-        self.server_host = "localhost"
+        self.server_host = "192.168.0.190"  #Set the server address right here
         self.server_port = 8888
         self.lock = threading.Lock()  # To synchronize access to shared data
         self.hostname = None
