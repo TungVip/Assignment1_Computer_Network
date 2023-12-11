@@ -8,7 +8,8 @@ import threading
 
 class FileClient:
     def __init__(self, log_callback=None):
-        self.server_host = "192.168.0.190"  #Set the server address right here
+        # self.server_host = "192.168.0.190"  #Set the server address right here
+        self.server_host = "192.168.56.1"
         self.server_port = 8888
         self.lock = threading.Lock()  # To synchronize access to shared data
         self.hostname = None
@@ -18,6 +19,8 @@ class FileClient:
         self.client_socket = None
         self.server_connected = False
         self.repository_folder = None
+        self.discovery_array = []  # Array of shared file name
+        self.discover_status = False
 
     def log(self, message):     # Done
         """Log a message to the console or using the Logs tab in the GUI.
@@ -90,10 +93,11 @@ class FileClient:
                         self.log("Connection closed by the server.")
                         break
                     data = json.loads(recvd_data)
-                    print(f"currently at receive message {data}")
 
                     if data["header"] == "fetch" and data["payload"] is not None:
                         self.handle_fetch_sources(data)
+                    elif data["header"] == "discover" and data["payload"] is not None:
+                        self.handle_discover_sources(data)
                     else:
                         self.log(data["payload"]["message"])
                 except ConnectionResetError:
@@ -192,6 +196,7 @@ class FileClient:
         Returns:
             bool: True if the file was published successfully, False otherwise
         """
+        # call discover function
         if file_path != self.repository_folder:
             if self.server_connected is False:
                 self.log("Not connected to server.")
@@ -235,6 +240,8 @@ class FileClient:
         Args:
             client_socket (socket.socket): the client' socket
             file_name (str): the file's name on the server to fetch
+        Return:
+            Bool
         """
         if self.server_connected is False:
             self.log("Not connected to server.")
@@ -255,6 +262,27 @@ class FileClient:
             return False
         return True
 
+    def discover(self, client_socket: socket.socket):
+        """Discover all existed files from server file lists
+
+        Args:
+            client_socket (socket.socket): the client' socket
+        Return:
+            Bool
+        """
+        if self.server_connected is False:
+            self.log("Not connected to server.")
+            return False
+
+        command = {"header": "discover", "type": 0, "payload": {}}
+        request = json.dumps(command)
+        try:
+            client_socket.sendall(request.encode("utf-8", "replace"))
+        except Exception as e:
+            self.log(f"Error discover shared files: {e}")
+            return False
+        return True
+    
     def send_file(self, client_socket: socket.socket, fname: str):
         """Send a file to a peer.
 
@@ -376,6 +404,20 @@ class FileClient:
         else:
             self.log("Fetch failed!")
 
+    def handle_discover_sources(self, data):
+        """Handle the discover response from the server.
+
+        Args:
+            data (obj): response from the server
+        """
+        sources_data = data["payload"]
+        self.discovery_array = sources_data["fname"][0]
+        self.discover_status = True 
+        if not sources_data["success"]:
+            self.log("Can not file fetch lists!")
+            return 
+        
+        
     def quit(self, client_socket: socket.socket):       # Done
         """Quit the client.
 
@@ -470,7 +512,7 @@ class FileClient:
 
                 self.log("Download completed!")
                 self.log(f"Publish file {fname} to server")
-                self.publish(self.client_socket,self.repository_folder, fname)
+                self.publish(self.client_socket, self.repository_folder, file_name)
 
             except ConnectionResetError:
                 self.log("Connection closed by peer.")

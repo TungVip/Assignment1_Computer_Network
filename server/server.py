@@ -154,6 +154,14 @@ class ServerLogic:
                 self.set_hostname(
                     client_socket, client_address, command["payload"]["hostname"]
                 )
+            elif command["header"] == "discover":
+
+                self.log_request(
+                    f">>> Client {client_address}: {command['header'].upper()}\n---\n"
+                )
+                self.client_discover(
+                    client_socket, client_address
+                )   
             else:
                 self.log_request(
                     f">>> Client {client_address}: Unknown command {command}"
@@ -197,7 +205,6 @@ class ServerLogic:
             self.log(
                 f"Files {file_names_str} published by {client_address}"
             )
-            print(self.clients[client_address]["files"])
         else:
             self.log(f"Unknown client {client_address}")
 
@@ -234,7 +241,6 @@ class ServerLogic:
                 },
             }
             response = json.dumps(response_data)
-            print(response)
             client_socket.send(response.encode("utf-8", "replace"))
         else:
             response_data = {
@@ -408,6 +414,34 @@ class ServerLogic:
         else:
             return f"Unknown client {client_address}"
 
+    def client_discover(self, client_socket, requesting_client):
+        """Handle discovery request from client
+
+        Args:
+            client_socket (socket): The client' socket
+            requesting_client (tuple[str, int]): Client's address
+        """
+        
+        all_file_names = []
+        seen_files = set()
+
+        for client_info in self.clients.values():
+            for file_name in client_info["files"]:
+                if file_name not in seen_files:
+                    all_file_names.append(file_name)
+                    seen_files.add(file_name)
+        response_data = {
+            "header": "discover",
+            "type": 1,
+            "payload": {
+                "success": True,
+                "message": "Discover list: ",
+                "fname": [all_file_names],
+            },
+        }
+        response = json.dumps(response_data)
+        client_socket.send(response.encode("utf-8", "replace"))
+    
     def shutdown(self):
         """Shutdown the server"""
         self.log("Shutting down the server...")
