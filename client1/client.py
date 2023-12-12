@@ -8,8 +8,7 @@ import threading
 
 class FileClient:
     def __init__(self, log_callback=None):
-        # self.server_host = "192.168.0.190"  #Set the server address right here
-        self.server_host = "192.168.56.1"
+        self.server_host = "localhost"  #Set the server address right here
         self.server_port = 8888
         self.lock = threading.Lock()  # To synchronize access to shared data
         self.hostname = None
@@ -198,6 +197,15 @@ class FileClient:
         """
         # call discover function
         if file_path != self.repository_folder:
+            discover_status = self.discover(self.client_socket)
+            if discover_status:
+                while not self.discover_status:
+                    pass
+            self.discover_status = False
+            if file_name in self.discovery_array:
+                self.log("File already existed in the repository")   
+                return False
+
             if self.server_connected is False:
                 self.log("Not connected to server.")
                 return False
@@ -248,10 +256,19 @@ class FileClient:
             return False
 
         files = os.listdir(self.repository_folder)
-        for file in files:
-            if file == file_name:
-                self.log("File existing in repository")
-                return False
+        if file_name in files:
+            self.log("File existing in repository")
+            return False
+        
+        discover_status = self.discover(self.client_socket)
+        if discover_status:
+            while not self.discover_status:
+                pass
+        self.discover_status = False
+
+        if file_name not in self.discovery_array:
+            self.log("No other clients with the file found!")
+            return False
 
         command = {"header": "fetch", "type": 0, "payload": {"fname": file_name}}
         request = json.dumps(command)

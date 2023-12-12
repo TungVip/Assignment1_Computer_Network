@@ -82,9 +82,10 @@ class FileClientGUI:
                         for file_name in os.listdir(self.client.repository_folder):
                             result += f"{file_name}\n"
                         result = result.rstrip("\n")
-                    self.window["-REPO-"].update(disabled=False)
-                    self.window["-REPO-"].print(result)
-                    self.window["-REPO-"].update(disabled=True)
+                    if result != "":
+                        self.window["-REPO-"].update(disabled=False)
+                        self.window["-REPO-"].print(result.rstrip("\n"))
+                        self.window["-REPO-"].update(disabled=True)
                     
             except Exception as e:
                 self.log(f"Error setting hostname: {e}")

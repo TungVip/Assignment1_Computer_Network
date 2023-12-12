@@ -421,13 +421,14 @@ class ServerLogic:
             client_socket (socket): The client' socket
             requesting_client (tuple[str, int]): Client's address
         """
-        
+        client_address = client_socket.getpeername()
+        client_file = self.clients[client_address]["files"]
         all_file_names = []
         seen_files = set()
 
         for client_info in self.clients.values():
             for file_name in client_info["files"]:
-                if file_name not in seen_files:
+                if file_name not in seen_files and file_name not in client_file:
                     all_file_names.append(file_name)
                     seen_files.add(file_name)
         response_data = {

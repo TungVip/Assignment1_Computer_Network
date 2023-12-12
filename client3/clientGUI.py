@@ -16,8 +16,8 @@ class FileClientGUI:
             [sg.Text("Command:", key="-COMMAND_TEXT-", font=("Helvetica", 12), visible=False), sg.InputText(key="-COMMAND-", size=(40, 1), visible=False), sg.Button("Send Command", key="-COMMAND_BUTTON-", visible=False)],
             [sg.Text("Upload File:", key="-UPLOAD_TEXT-", font=("Helvetica", 12), visible=False), sg.InputText(key="-FILE_PATH-", size=(40, 1), visible=False),
              sg.FileBrowse(key="-BROWSE-", visible=False)],
-            [sg.Text("File Name:", key="-FN_TEXT-", font=("Helvetica", 12), visible=False), sg.InputText(key="-FILE_NAME-", size=(40, 1), visible=False),
-             sg.Button("Publish", key="-PUBLISH-", visible=False)],
+                [sg.Text("File Name:", key="-FN_TEXT-", font=("Helvetica", 12), visible=False), sg.InputText(key="-FILE_NAME-", size=(40, 1), visible=False),
+                sg.Button("Publish", key="-PUBLISH-", visible=False)],
             [ sg.Button("Quit")]
         ]
 
@@ -43,6 +43,10 @@ class FileClientGUI:
                     self.publish(command_parts[1], command_parts[2])
                 elif command_parts[0] == "fetch":
                     self.fetch(command_parts[1])
+                elif command_parts[0] == "discover":
+                    self.discover()
+                else:
+                    self.log("Not a valid command.")
 
     def connect(self, hostname):        # Done
         if hostname:
@@ -78,9 +82,10 @@ class FileClientGUI:
                         for file_name in os.listdir(self.client.repository_folder):
                             result += f"{file_name}\n"
                         result = result.rstrip("\n")
-                    self.window["-REPO-"].update(disabled=False)
-                    self.window["-REPO-"].print(result)
-                    self.window["-REPO-"].update(disabled=True)
+                    if result != "":
+                        self.window["-REPO-"].update(disabled=False)
+                        self.window["-REPO-"].print(result.rstrip("\n"))
+                        self.window["-REPO-"].update(disabled=True)
                     
             except Exception as e:
                 self.log(f"Error setting hostname: {e}")
@@ -103,7 +108,7 @@ class FileClientGUI:
                 self.window["-FILE_NAME-"].update("")
                 self.window["-COMMAND-"].update("")
                 self.window["-REPO-"].update(disabled=False)
-                self.window["-REPO-"].print(f"{file_name}\n")
+                self.window["-REPO-"].print(file_name.rstrip("\n"))
                 self.window["-REPO-"].update(disabled=True)
         except Exception as e:
             self.log(f"Error publishing file: {e}")
@@ -113,7 +118,12 @@ class FileClientGUI:
             self.log("Error fetching file: File name cannot be blank!")
             return
         try:
-            self.client.fetch(self.client.client_socket, file_name)
+            fetch_status = self.client.fetch(self.client.client_socket, file_name)
+            if fetch_status:
+                self.window["-COMMAND-"].update("")
+                self.window["-REPO-"].update(disabled=False)
+                self.window["-REPO-"].print(file_name.rstrip("\n"))
+                self.window["-REPO-"].update(disabled=True)
         except Exception as e:
             self.log(f"Error fetching file: {e}")
 
@@ -126,6 +136,23 @@ class FileClientGUI:
         self.window["-OUTPUT-"].print(message, end="\n")
         self.window["-OUTPUT-"].update(disabled=True)
         
-
+    def discover(self):
+        try:
+            discover_status = self.client.discover(self.client.client_socket)
+            if discover_status:
+                while not self.client.discover_status:
+                    pass
+                self.window["-FILE_PATH-"].update("")
+                self.window["-FILE_NAME-"].update("")
+                self.window["-COMMAND-"].update("")
+                message1 = "All existed file name: "
+                message2 = ', '.join(self.client.discovery_array)
+                message = message1 + message2
+                self.window["-OUTPUT-"].update(disabled=False)
+                self.window["-OUTPUT-"].print(message)
+                self.window["-OUTPUT-"].update(disabled=True)
+                self.client.discover_status = False
+        except Exception as e:
+            self.log(f"Error publishing file: {e}")
 if __name__ == "__main__":
     gui = FileClientGUI()
