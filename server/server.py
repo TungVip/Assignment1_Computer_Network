@@ -7,7 +7,7 @@ from typing import Any
 
 
 class ServerLogic:
-    def __init__(self, host, port, log_callback=None, log_request_callback=None):       # Done
+    def __init__(self, host, port, log_callback=None, log_request_callback=None):       
         self.host = host
         self.port = port
         # clients -> {client_address: {"hostname": hostname, "files": [dictionary of files]}}
@@ -19,7 +19,7 @@ class ServerLogic:
         self.log_callback = log_callback
         self.log_request_callback = log_request_callback
 
-    def log(self, message):     # Done
+    def log(self, message):     
         """Log a message to the console or to a callback function
 
         Args:
@@ -30,23 +30,23 @@ class ServerLogic:
         else:
             print(message)
 
-    def log_request(self, message):     # Done
+    def log_request(self, message):     
         """Log a request to the console or to a callback function
 
         Args:
-            message (str): The message to log
+            message (str): The message to request log
         """
         if self.log_request_callback:
             self.log_request_callback(message)
         else:
             print(message)
 
-    def start(self):        # Done
+    def start(self):        
         """Start the server in a separate thread"""
         server_thread = threading.Thread(target=self.run_server, daemon=True)
         server_thread.start()
 
-    def run_server(self):       # Done
+    def run_server(self):       
         """Setup socket for the server and start listening for connections"""
         with self.lock:
             if self.is_running:
@@ -196,8 +196,7 @@ class ServerLogic:
 
         Args:
             client_address (tuple[str, int]): The client's address
-            lname (str): file's name on the client's machine
-            fname (list): list of file names on the server
+            fname (str): file name published from client to server 
         """
         if client_address in self.clients:
             self.clients[client_address]["files"].extend(fname)
@@ -214,7 +213,7 @@ class ServerLogic:
         Args:
             client_socket (socket): The client' socket
             requesting_client (tuple[str, int]): Client's address
-            fname (str): file's name on the server
+            fname (str): Requested file name from client
         """
         found_client: list[tuple[tuple[str, int], Any]] = [
             (addr, data)

@@ -6,7 +6,7 @@ import threading
 from client import FileClient
 
 class FileClientGUI:
-    def __init__(self):     # Done
+    def __init__(self):     
         self.client = FileClient(log_callback=self.log)
 
         self.layout = [
@@ -33,7 +33,7 @@ class FileClientGUI:
             elif event == "-CONNECT_BUTTON-":      
                 hostname = values["-HOSTNAME-"]
                 self.connect(hostname)
-                    
+            
             elif event == "-PUBLISH-":         
                 self.publish(values["-FILE_PATH-"], values["-FILE_NAME-"])
                 
@@ -48,7 +48,7 @@ class FileClientGUI:
                 else:
                     self.log("Not a valid command.")
 
-    def connect(self, hostname):        # Done
+    def connect(self, hostname):        
         if hostname:
             try:
                 client_address = self.client.connect_to_server(hostname)
@@ -92,7 +92,7 @@ class FileClientGUI:
         else:
             self.log("Hostname cannot be empty.")
 
-    def publish(self, file_path, file_name):     # Done
+    def publish(self, file_path, file_name):     
         if not file_name or not file_path:
             self.log("Error publishing file: Please fill in the blank!")
             return
@@ -127,11 +127,11 @@ class FileClientGUI:
         except Exception as e:
             self.log(f"Error fetching file: {e}")
 
-    def quit_client(self):      # Done
+    def quit_client(self):      
         self.client.quit(self.client.client_socket)
         self.window.close()
 
-    def log(self, message):     # Done
+    def log(self, message):     
         self.window["-OUTPUT-"].update(disabled=False)
         self.window["-OUTPUT-"].print(message, end="\n")
         self.window["-OUTPUT-"].update(disabled=True)

@@ -21,7 +21,7 @@ class FileClient:
         self.discovery_array = []  # Array of shared file name
         self.discover_status = False
 
-    def log(self, message):     # Done
+    def log(self, message):     
         """Log a message to the console or using the Logs tab in the GUI.
 
         Args:
@@ -32,7 +32,7 @@ class FileClient:
         else:
             print(message)
 
-    def connect_to_server(self, hostname):      # Done
+    def connect_to_server(self, hostname):      
         """Connect to the server and set the client's hostname.
 
         Args:
@@ -61,7 +61,7 @@ class FileClient:
 
         return client_address
 
-    def start(self, client_address):        # Done
+    def start(self, client_address):        
         """Start the client with receiving messages from server
         and listening for incoming connections from peers.
 
@@ -109,7 +109,7 @@ class FileClient:
                     break
             self.server_connected = False
 
-    def start_listener(self, client_address):       # Done
+    def start_listener(self, client_address):       
         """Start the listener socket to accept incoming connections.
 
         Args:
@@ -159,7 +159,15 @@ class FileClient:
                 client_socket.close()
                 break
 
-    def connect_publish(self, client_socket: socket.socket):    # Done
+    def connect_publish(self, client_socket: socket.socket): 
+        """Publish existing file in client's repository on connection.
+
+        Args:
+            client_socket (socket.socket): the peer' socket
+            
+        Returns:
+            bool: True if the file was published successfully, False otherwise
+        """   
         if self.server_connected is False:
             self.log("Not connected to server.")
             return False
@@ -180,17 +188,18 @@ class FileClient:
 
         return True
         
-    def is_file_in_folder(self, file_name, folder_path):        # Done
+    def is_file_in_folder(self, file_name, folder_path):    
+        # Helper function    
         file_path = os.path.join(folder_path, file_name)
         return os.path.isfile(file_path)
 
-    def publish(self, client_socket: socket.socket, file_path, file_name: str):     # Done
+    def publish(self, client_socket: socket.socket, file_path, file_name: str):     
         """Publish a file aliased as file_name to the server.
 
         Args:
             client_socket (socket.socket): the client' socket
             file_path (str): path to local file on the client's machine
-            file_name (str): name of the file on the server
+            file_name (str): name of the file uploaded to client's repository and on the server
 
         Returns:
             bool: True if the file was published successfully, False otherwise
@@ -203,7 +212,7 @@ class FileClient:
                     pass
             self.discover_status = False
             if file_name in self.discovery_array:
-                self.log("File already existed in the repository")   
+                self.log("File already existed in the repository\nSend 'discover' command for existing file names.")   
                 return False
 
             if self.server_connected is False:
@@ -215,7 +224,7 @@ class FileClient:
                 return False
 
             if self.is_file_in_folder(file_name, self.repository_folder):
-                self.log(f"File name '{file_name}' already exists.")
+                self.log(f"File name '{file_name}' already exists in local repository.")
                 return False
             
             uploaded_file_path = os.path.join(self.repository_folder, file_name)
@@ -249,7 +258,7 @@ class FileClient:
             client_socket (socket.socket): the client' socket
             file_name (str): the file's name on the server to fetch
         Return:
-            Bool
+            bool: True if the file was fetched successfully, False otherwise
         """
         if self.server_connected is False:
             self.log("Not connected to server.")
@@ -285,7 +294,7 @@ class FileClient:
         Args:
             client_socket (socket.socket): the client' socket
         Return:
-            Bool
+            bool: True if the file names list was discovered successfully, False otherwise
         """
         if self.server_connected is False:
             self.log("Not connected to server.")
@@ -371,12 +380,12 @@ class FileClient:
                     return False
         return True
 
-    def init_hostname(self, client_socket: socket.socket, hostname: str):       # Done
+    def init_hostname(self, client_socket: socket.socket, hostname: str):       
         """Send the client's hostname to the server and receive the client's address.
 
         Args:
             client_socket (socket.socket): the client' socket
-            hostname (_type_): the client's hostname
+            hostname (str): the client's hostname
 
         Returns:
             tuple[str, int]: the client's address (hostname, port)
@@ -435,7 +444,7 @@ class FileClient:
             return 
         
         
-    def quit(self, client_socket: socket.socket):       # Done
+    def quit(self, client_socket: socket.socket):       
         """Quit the client.
 
         Args:
@@ -448,7 +457,7 @@ class FileClient:
         print("Client connection closed. Exiting.")
         sys.exit(0)
 
-    def send_hostname(self, client_socket: socket.socket):      # Done
+    def send_hostname(self, client_socket: socket.socket):      
         """Send the client's hostname to the server.
 
         Args:

@@ -3,7 +3,7 @@
 ## Request schema
 ```{json}
 {
-    "header": "fetch" | "publish" | "download" | "ping" | "sethost",
+    "header": "fetch" | "publish" | "download" | "ping" | "sethost" | "discover",
     "type": 0,
     "payload": {
         ...
@@ -14,7 +14,7 @@
 ## Response schema
 ```{json}
 {
-    "header": "fetch" | "publish" | "download" | "ping" | "sethost",
+    "header": "fetch" | "publish" | "download" | "ping" | "sethost" | "discover",
     "type": 1,
     "payload": {
         "success": True | False,
@@ -147,6 +147,29 @@
         "success": True | False,
         "message": string,
         "length": int,
+    }
+}
+```
+
+### Discover
+### client -request-> server
+```{json}
+{
+    "header": "discover",
+    "type": 0,
+    "payload": {
+
+    }
+}
+```
+
+### server -response-> client
+```{json}
+{
+    "header": "discover",
+    "type": 1,
+    "payload": {
+        "fnames": ["string1", "string2", ...]
     }
 }
 ```
